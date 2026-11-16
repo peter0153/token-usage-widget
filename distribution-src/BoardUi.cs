@@ -4,7 +4,7 @@ sealed class BoardTheme {
  public bool Dark;public Color Bg,Surface,Ink,Muted,Line,Track,Accent,Tint;
  static Color C(string hex){return ColorTranslator.FromHtml(hex);}
  public static bool SystemDark(){try{using(var k=Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"))return k!=null&&Convert.ToInt32(k.GetValue("AppsUseLightTheme",1))==0;}catch{return false;}}
- public static BoardTheme Get(string mode){bool d=mode=="dark"||mode!="light"&&SystemDark();return new BoardTheme{Dark=d,Bg=C(d?"#121A18":"#FAFAF7"),Surface=C(d?"#1B2622":"#FFFFFF"),Ink=C(d?"#F1F5F1":"#20312D"),Muted=C(d?"#ADBAB2":"#626E68"),Line=C(d?"#53665B":"#D3DBD4"),Track=C(d?"#34443B":"#E9EDE9"),Accent=C(d?"#83DFC0":"#12745F"),Tint=C(d?"#223A30":"#E9F3EE")};}
+ public static BoardTheme Get(string mode){bool d=mode=="dark"||mode!="light"&&SystemDark();return new BoardTheme{Dark=d,Bg=C(d?"#121A18":"#E7EDF5"),Surface=C(d?"#1B2622":"#F8FAFD"),Ink=C(d?"#F1F5F1":"#20312D"),Muted=C(d?"#ADBAB2":"#596B79"),Line=C(d?"#53665B":"#BFCDDC"),Track=C(d?"#34443B":"#DCE4EE"),Accent=C(d?"#83DFC0":"#12745F"),Tint=C(d?"#223A30":"#DDECE8")};}
  public Color Quota(double v){string b=BoardColors.Band(v);return ColorTranslator.FromHtml(Dark?(b=="red"?"#FF6B75":b=="orange"?"#FFAB52":b=="blue"?"#70A8FF":"#34D399"):(b=="red"?"#DE3A42":b=="orange"?"#DF7B21":b=="blue"?"#2878E6":"#087F68"));}
 }
 static class BoardDraw {

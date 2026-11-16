@@ -24,7 +24,7 @@ static class MiniBarRenderer {
         var fg=theme.Ink;
         var accent=remaining.HasValue?theme.Quota(remaining.Value):theme.Accent;
         
-        g.SmoothingMode=SmoothingMode.None;Block(g,new RectangleF(1,1,width-2,36),8,surface);
+        g.SmoothingMode=SmoothingMode.AntiAlias;Block(g,new RectangleF(1,1,width-2,36),8,surface);
         g.SmoothingMode=SmoothingMode.AntiAlias; if(stale)using(var dot=new SolidBrush(theme.Quota(42)))g.FillEllipse(dot,width-7,2,4,4);
         using(var outline=Round(new RectangleF(1.5f,1.5f,width-3,35),8))using(var pen=new Pen(hover?accent:light?Color.FromArgb(186,210,199):Color.FromArgb(64,82,90),hover?1.7f:1))g.DrawPath(pen,outline);
         Text(g,remaining.HasValue?remaining.Value.ToString("0")+"%":"—",new RectangleF(4,2,pct-4,27),small?21:24,accent,FontStyle.Bold);

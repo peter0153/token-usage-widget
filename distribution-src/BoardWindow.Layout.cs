@@ -39,6 +39,7 @@ partial class UsageWidget {
   if(tab=="기록"){PaintHistory(original);original.Restore(state);return;}
   if(states.Count==0){BoardDraw.Text(original,"내 사용량을 한눈에",new RectangleF(20,45,335,40),23,theme.Ink,true);BoardDraw.Text(original,"+ 계정 추가에서 Codex를 연결하세요.",new RectangleF(20,104,335,32),14,theme.Muted);BoardDraw.Text(original,"비밀번호는 공식 브라우저에서 입력합니다.",new RectangleF(20,147,335,30),12,theme.Muted);BoardDraw.Text(original,"Claude는 계정 추가에서 서비스 예정으로 표시합니다.",new RectangleF(20,200,335,35),11,theme.Muted);original.Restore(state);return;}
   for(int i=0;i<states.Count;i++){var s=states[i];var d=s.Data;float top=4+i*202;
+   if(!theme.Dark)BoardDraw.Box(original,new RectangleF(12,top-1,351,200),theme.Surface,14,theme.Line);
    BoardDraw.Box(original,new RectangleF(20,top+4,25,25),ColorTranslator.FromHtml("#7268ED"),8);BoardDraw.Text(original,"C",new RectangleF(20,top+4,25,25),17,Color.White,true,false,true);
    BoardDraw.Text(original,"Codex",new RectangleF(55,top,83,31),20,theme.Ink,true);BoardDraw.Box(original,new RectangleF(132,top+6,Math.Min(147,Math.Max(36,s.Entry.Alias.Length*12+16)),21),theme.Tint,6);BoardDraw.Text(original,s.Entry.Alias,new RectangleF(140,top+5,139,23),11,theme.Muted);
    BoardDraw.Text(original,"···",new RectangleF(325,top,32,32),18,theme.Muted,false,false,true);

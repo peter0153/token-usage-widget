@@ -117,15 +117,16 @@ class TaskbarUsageWindow : NativeWindow, IDisposable {
         reset=resetAt;stale=error;connected=signedIn;checking=busy;
         if(Handle!=IntPtr.Zero)InvalidateRect(Handle,IntPtr.Zero,false);
     }
-    public void DrawToBitmap(Bitmap target,Rectangle bounds){using(var g=Graphics.FromImage(target)){PaintContent(g,false);}}
-    void PaintContent(Graphics g,bool transparent){
-        g.Clear(lightTheme?Color.FromArgb(230,241,235):Color.FromArgb(30,34,40));
+    public void DrawToBitmap(Bitmap target,Rectangle bounds){using(var g=Graphics.FromImage(target)){PaintContent(g);}}
+    void PaintContent(Graphics g){
+        // UpdateLayeredWindow uses per-pixel alpha. Only the rounded frame is filled.
+        g.Clear(Color.Transparent);
         MiniBarRenderer.Draw(g,scale,lightTheme,hovered,remaining,reset,DateTimeOffset.Now,stale,checking?"확인 중":connected?"조회 대기":"연결 필요",logicalWidth);
     }
     void PresentFrame(){
         if(disposed||Handle==IntPtr.Zero||!IsWindow(Handle))return;
         using(var bitmap=new Bitmap(Width,Height,System.Drawing.Imaging.PixelFormat.Format32bppPArgb)){
-            using(var g=Graphics.FromImage(bitmap))PaintContent(g,false);
+            using(var g=Graphics.FromImage(bitmap))PaintContent(g);
             IntPtr dc=CreateCompatibleDC(IntPtr.Zero),surface=IntPtr.Zero,previous=IntPtr.Zero;
             try{
                 surface=bitmap.GetHbitmap(Color.FromArgb(0));previous=SelectObject(dc,surface);
