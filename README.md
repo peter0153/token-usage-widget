@@ -22,13 +22,51 @@ Codex 5시간·주간 한도와 최근 일별 토큰을 보여주는 작은 Wind
 
 ## 화면 예시
 
-아래 이미지는 기능 설명을 위한 합성 데이터이며 개인 계정 정보가 아닙니다.
+아래는 **2.1.1 화면과 실제 미니바 그리기 코드로 만든 예시**입니다. 수치·계정 별칭은 기능 설명을 위한 합성 데이터이며 개인 계정 정보가 아닙니다. 이미지를 누르면 크게 볼 수 있습니다.
 
+### 큰 위젯 · 다크 / 라이트
 
+5시간·주간 한도의 남은 비율과 초기화까지 남은 시간, 초기화권 수량, 최근 일별 토큰 그래프를 한 화면에서 확인합니다. **다크가 새 설치의 기본값**이며, 라이트는 회청색 바탕과 밝은 둥근 카드로 구성되어 있습니다.
 
-![라이트 테마](docs/screenshots/light-theme.png)
+| 다크 · 기본 테마 | 라이트 · 회청색 배경 |
+| --- | --- |
+| <a href="docs/screenshots/widget-dark.png"><img src="docs/screenshots/widget-dark.png" alt="큰 위젯 다크 테마: 한도, 초기화권, 최근 5일 토큰 그래프" width="360"></a> | <a href="docs/screenshots/light-theme.png"><img src="docs/screenshots/light-theme.png" alt="큰 위젯 라이트 테마: 회청색 배경과 밝은 카드" width="360"></a> |
 
-![작은 작업표시줄 미니바](docs/screenshots/taskbar-compact.png)
+### 작업표시줄 미니바 · 최대로 넓힌 모습
+
+아래 두 화면은 **최대 너비 360 기준**입니다. Windows 배율에 따라 실제 픽셀 크기는 달라지며, 글씨가 잘 보이도록 예시는 2배 해상도로 렌더링했습니다. **남은 %와 그래프 → 시계 아이콘 옆 초기화 시각 → 초기화까지 남은 시간** 순서입니다. 미니바는 작업표시줄 안에 표시되며, 둥근 모서리 바깥은 투명합니다.
+
+**다크**
+
+[![최대 너비 작업표시줄 미니바 다크: 60%, 초기화 19:58, 3h 47m 남음](docs/screenshots/taskbar-expanded-dark.png)](docs/screenshots/taskbar-expanded-dark.png)
+
+**라이트**
+
+[![최대 너비 작업표시줄 미니바 라이트: 60%, 초기화 19:58, 3h 47m 남음](docs/screenshots/taskbar-expanded-light.png)](docs/screenshots/taskbar-expanded-light.png)
+
+**크기와 테마 바꾸기**
+
+- **미니바 왼쪽 가장자리를 마우스로 끌면** 너비를 연속으로 줄이거나 늘릴 수 있습니다. 최대 너비는 끝까지 늘려 선택합니다.
+- **우클릭 → 미니바 크기**에서 작게·보통·자세히 중 선택하거나, 설정의 너비 슬라이더로 조절할 수도 있습니다.
+- **우클릭 → 테마**에서 다크·라이트·시스템을 선택합니다. 마우스를 올리면 테두리가 반응합니다.
+- 큰 창과 미니바는 독립적으로 켜고 끌 수 있습니다. 미니바를 두 번 누르면 큰 창이 열리고, 우클릭하면 표시·계정·자동 시작·업데이트 메뉴가 열립니다.
+
+### 공간이 좁을 때 · 작게 줄인 모습
+
+너비를 줄이면 **남은 %와 남은 시간** 위주로 간단하게 표시합니다. 아래는 작은 크기 160의 예시입니다.
+
+| 다크 · 작게 | 라이트 · 작게 |
+| --- | --- |
+| [![작은 미니바 다크: 60%와 3h 47m](docs/screenshots/taskbar-small-dark.png)](docs/screenshots/taskbar-small-dark.png) | [![작은 미니바 라이트: 60%와 3h 47m](docs/screenshots/taskbar-small-light.png)](docs/screenshots/taskbar-small-light.png) |
+
+<details>
+<summary><strong>일별 토큰 기록 · 10일 화면 펼쳐 보기</strong></summary>
+
+첫 화면과 기록 탭에서 **5일/10일** 범위를 선택합니다. 기록 탭에서는 막대그래프와 날짜별 수치를 확인하고 아래로 스크롤해 더 볼 수 있습니다. 서버 집계·이 PC 참고값·미집계를 구분하며, 미집계를 0으로 표시하지 않습니다.
+
+[![최근 10일 토큰 막대그래프와 일별 사용량 기록](docs/screenshots/history-ten-days.png)](docs/screenshots/history-ten-days.png)
+
+</details>
 
 ## 빌드
 
