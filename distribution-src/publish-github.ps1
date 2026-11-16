@@ -9,6 +9,9 @@ $headers=@{Authorization=('Bearer '+$env:GITHUB_TOKEN);Accept='application/vnd.g
 $api='https://api.github.com/repos/'+$repo
 function Upload-ReleaseAsset($release,$file){$name=[IO.Path]::GetFileName($file);if(@($release.assets|Where-Object name -eq $name).Count){throw ('Release asset already exists: '+$name)};$url=$release.upload_url -replace '\{.*$','';Invoke-RestMethod -Method Post -Uri ($url+'?name='+[Uri]::EscapeDataString($name)) -Headers $headers -ContentType 'application/octet-stream' -InFile $file | Out-Null}
 if($Phase -eq 'build'){
+ $existing=$null
+ try{$existing=Invoke-RestMethod -Uri ($api+'/releases/tags/v'+$version) -Headers $headers}catch{if([int]$_.Exception.Response.StatusCode -ne 404){throw}}
+ if($existing){Write-Output ('Version '+$version+' already has a release; assets were not replaced. Increase version.txt for a new release.');return}
  $out=Join-Path $root ('output/windows-release/'+$version)
  $archive=Join-Path $out ('TokenWidget-'+$version+'-win64.zip')
  if(-not (Test-Path -LiteralPath $archive)){throw 'Validated build archive missing'}

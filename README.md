@@ -17,6 +17,14 @@ Codex 5시간·주간 한도와 최근 일별 토큰을 보여주는 작은 Wind
 
 현재 사용자 폴더에 설치하며 관리자 권한을 요구하지 않습니다. 공인 Windows 코드 서명은 적용하지 않아 PC 보안 정책에 따른 경고가 남을 수 있습니다. 내부 업데이트 검증 서명은 Windows 게시자 인증과 다른 기능입니다.
 
+## 화면 예시
+
+아래 이미지는 기능 설명을 위한 합성 데이터이며 개인 계정 정보가 아닙니다.
+
+
+
+![작은 작업표시줄 미니바](docs/screenshots/taskbar-compact.png)
+
 ## 빌드
 
 Windows x64의 .NET Framework C# 컴파일러와 PowerShell을 사용합니다.
@@ -32,7 +40,7 @@ Windows x64의 .NET Framework C# 컴파일러와 PowerShell을 사용합니다.
 
 ## 유지보수자의 새 버전 배포
 
-1. `distribution-src/version.txt`의 버전을 올리고 변경한 소스를 main에 올립니다.
+1. `distribution-src/version.txt`의 버전을 올리고 변경한 소스를 main에 올립니다. 이미 게시된 버전의 설치 파일은 덮어쓰지 않습니다.
 2. GitHub Actions가 검사·빌드하여 공개 사전 배포 ZIP을 생성합니다. 이 단계에는 비밀 서명 키가 없습니다.
 3. 제작자 PC로 그 ZIP을 내려받아 아래 명령으로 검증하고 서명합니다. 기존 비공개 키는 제작자 PC의 `.release-signing/update-key.xml`에 보관하며 저장소에 올리지 않습니다.
 
