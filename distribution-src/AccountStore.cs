@@ -1,0 +1,31 @@
+using System;using System.IO;using System.Linq;using System.Text;using System.Collections.Generic;using System.Security.Cryptography;using System.Text.RegularExpressions;using System.Web.Script.Serialization;using System.Threading;
+sealed class AccountEntry {public string Id,Alias,Kind,Identity,EmailIdentity;}
+static class SafeJson {
+ public static readonly JavaScriptSerializer Json=new JavaScriptSerializer{MaxJsonLength=2*1024*1024};
+ public static void Write(string path,object data){Directory.CreateDirectory(Path.GetDirectoryName(path));string temp=path+"."+Guid.NewGuid().ToString("N")+".tmp";try{File.WriteAllText(temp,Json.Serialize(data),new UTF8Encoding(false));if(File.Exists(path))File.Replace(temp,path,path+".bak");else File.Move(temp,path);}finally{if(File.Exists(temp))File.Delete(temp);}}
+ public static T Read<T>(string path){try{return Json.Deserialize<T>(File.ReadAllText(path));}catch{if(File.Exists(path+".bak"))return Json.Deserialize<T>(File.ReadAllText(path+".bak"));throw;}}
+}
+sealed class AccountStore {
+ readonly string root;readonly string file;public readonly List<AccountEntry> Entries=new List<AccountEntry>();
+ public AccountStore(string data,bool follow){root=Path.GetFullPath(data);file=Path.Combine(root,"accounts.json");Directory.CreateDirectory(root);
+  if(File.Exists(file)){var list=SafeJson.Read<List<AccountEntry>>(file);if(list!=null)foreach(var e in list){Validate(e);if(Entries.Any(x=>x.Id==e.Id))throw new IOException("계정 목록이 중복되었습니다.");Entries.Add(e);}}
+  else {string mode=Path.Combine(root,"connection-mode.txt");bool existing=File.Exists(mode)?File.ReadAllText(mode).Trim()=="existing":follow;
+   if(existing)Entries.Add(new AccountEntry{Id="pc-codex",Alias="개인",Kind="pc"});
+   else if(File.Exists(Path.Combine(root,"account","auth.json")))Entries.Add(new AccountEntry{Id="legacy",Alias="개인",Kind="legacy"});Save();}
+ }
+ static void Validate(AccountEntry e){if(e==null||String.IsNullOrWhiteSpace(e.Id)||!Regex.IsMatch(e.Id,"^[a-z0-9-]{1,40}$")||!(e.Kind=="pc"&&e.Id=="pc-codex"||e.Kind=="legacy"&&e.Id=="legacy"||e.Kind=="managed"||e.Kind=="pending"))throw new IOException("계정 저장 경로가 올바르지 않습니다.");}
+ public string Home(AccountEntry e){Validate(e);if(e.Kind=="pc")return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".codex");if(e.Kind=="legacy")return Path.Combine(root,"account");return Path.Combine(root,e.Kind=="pending"?"pending":"accounts",e.Id);}
+ public static string Identity(string email,string workspace){if(String.IsNullOrWhiteSpace(email)&&String.IsNullOrWhiteSpace(workspace))return null;using(var h=SHA256.Create())return BitConverter.ToString(h.ComputeHash(Encoding.UTF8.GetBytes((email??"").Trim().ToLowerInvariant()+"|"+(workspace??"").Trim().ToLowerInvariant()))).Replace("-","");}
+ public AccountEntry Prepare(string alias){var e=new AccountEntry{Id=Guid.NewGuid().ToString("N"),Alias=Alias(alias),Kind="pending"};Directory.CreateDirectory(Home(e));File.WriteAllText(Path.Combine(Home(e),"config.toml"),"cli_auth_credentials_store = \"file\"\n",new UTF8Encoding(false));return e;}
+ public AccountEntry Commit(AccountEntry e,string email,string workspace,CancellationToken cancellation=default(CancellationToken)){cancellation.ThrowIfCancellationRequested();Validate(e);if(e.Kind!="pending")throw new InvalidOperationException();string key=Identity(email,workspace);if(key==null)throw new IOException("연결된 계정을 확인하지 못했습니다.");if(Entries.Any(x=>x.Identity==key||(String.IsNullOrWhiteSpace(workspace)&&x.EmailIdentity==Identity(email,null))))throw new IOException("이미 연결된 계정입니다. 계정 관리에서 기존 계정을 확인해 주세요.");string source=Home(e);string destination=Path.Combine(root,"accounts",e.Id);Directory.CreateDirectory(Path.GetDirectoryName(destination));Directory.Move(source,destination);e.Kind="managed";e.Identity=key;e.EmailIdentity=Identity(email,null);Entries.Add(e);try{Save();return e;}catch{Entries.Remove(e);Directory.Move(destination,source);e.Kind="pending";throw;}}
+ public void Cancel(AccountEntry e){if(e==null||e.Kind!="pending")return;string path=Home(e);for(int i=0;i<3;i++){try{if(Directory.Exists(path))Directory.Delete(path,true);return;}catch(IOException){Thread.Sleep(80);}catch(UnauthorizedAccessException){return;}}}
+ public void SetIdentity(AccountEntry e,string email,string workspace){string id=Identity(email,workspace);if(id==null)return;string before=e.Identity;string emailBefore=e.EmailIdentity;e.Identity=id;e.EmailIdentity=Identity(email,null);try{Save();}catch{e.Identity=before;e.EmailIdentity=emailBefore;throw;}}
+ public AccountEntry AddPc(string alias,string email=null,string workspace=null){var e=Entries.FirstOrDefault(x=>x.Kind=="pc");if(e!=null)return e;string key=Identity(email,workspace);if(key!=null&&Entries.Any(x=>x.Identity==key||(String.IsNullOrWhiteSpace(workspace)&&x.EmailIdentity==Identity(email,null))))throw new IOException("이미 연결된 계정입니다. 계정 관리에서 기존 계정을 확인해 주세요.");e=new AccountEntry{Id="pc-codex",Alias=Alias(alias),Kind="pc",Identity=key,EmailIdentity=Identity(email,null)};Entries.Add(e);try{Save();return e;}catch{Entries.Remove(e);throw;}}
+ public void Rename(AccountEntry e,string alias){string old=e.Alias;e.Alias=Alias(alias);try{Save();}catch{e.Alias=old;throw;}}
+ public void Remove(AccountEntry e){int at=Entries.IndexOf(e);if(at<0)return;Entries.RemoveAt(at);try{Save();}catch{Entries.Insert(at,e);throw;}}
+ static string Alias(string alias){alias=(alias??"").Trim();if(alias.Length==0||alias.Length>24)throw new IOException("별칭은 1~24자로 입력해 주세요.");return alias;}
+ void Save(){SafeJson.Write(file,Entries);}
+}
+static class LegacyCache {
+ public static void Migrate(string root,IEnumerable<AccountEntry> entries){var entry=entries.FirstOrDefault(x=>x.Id=="pc-codex"||x.Id=="legacy");if(entry==null)return;string cache=Path.Combine(root,"cache",entry.Id+".json"),status=Path.Combine(root,"status.json");if(File.Exists(cache)||!File.Exists(status))return;try{var data=SafeJson.Read<Dictionary<string,object>>(status);object snapshot;if(data!=null&&data.TryGetValue("snapshot",out snapshot)&&snapshot is Dictionary<string,object>)SafeJson.Write(cache,snapshot);}catch{try{string copy=Path.Combine(root,"legacy-status-unreadable.json");if(!File.Exists(copy))File.Copy(status,copy,false);}catch{}}}
+}

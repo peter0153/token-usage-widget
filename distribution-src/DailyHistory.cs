@@ -1,0 +1,7 @@
+using System;using System.Collections.Generic;using System.Linq;
+sealed class DayUsage {public DateTime Day;public long? Tokens;public bool Local;}
+static class DailyHistory {
+ public static bool SameAccount(string oldId,string oldKey,string newId,string newKey){if(!String.IsNullOrEmpty(oldKey)&&!String.IsNullOrEmpty(newKey))return oldKey==newKey;return !String.IsNullOrEmpty(oldId)&&!String.IsNullOrEmpty(newId)&&oldId==newId;}
+ public static Dictionary<string,long?> CopyForAccount(Dictionary<string,long?> previous,string oldId,string oldKey,string newId,string newKey){return previous!=null&&SameAccount(oldId,oldKey,newId,newKey)?new Dictionary<string,long?>(previous):new Dictionary<string,long?>();}
+ public static List<DayUsage> Rows(Dictionary<string,long?> server,Dictionary<string,long?> local,long? todayLocal,DateTime today,int count){var rows=new List<DayUsage>();count=count==10?10:5;for(int i=count-1;i>=0;i--){DateTime day=today.Date.AddDays(-i);string key=day.ToString("yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture);long? value=null;bool pc=false;if(i==0&&todayLocal.HasValue){value=todayLocal;pc=true;}else if(server!=null&&server.ContainsKey(key)&&server[key].HasValue)value=server[key];else if(local!=null&&local.ContainsKey(key)&&local[key].HasValue){value=local[key];pc=true;}if(value.HasValue&&value.Value<0)value=null;rows.Add(new DayUsage{Day=day,Tokens=value,Local=pc});}return rows;}
+}

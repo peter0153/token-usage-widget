@@ -1,0 +1,13 @@
+.release-signing/
+distribution-src/vendor/
+배포용/
+output/
+distribution-tests/
+*.user
+*.log
+**/auth.json
+**/auth.json.bak
+**/settings.json
+**/accounts.json
+**/pending/
+**/cache/

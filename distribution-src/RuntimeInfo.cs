@@ -1,0 +1,1 @@
+static class RuntimeInfo { public const string Sha256 = "0628f6a5d5e304b7970dc0f53abd4a3ff084e9e14b79429ac0ebf92e37329412"; public const string EntryName = "codex-app-server-x86_64-pc-windows-msvc.exe"; }

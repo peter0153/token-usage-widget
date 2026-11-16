@@ -1,0 +1,61 @@
+name: Windows release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'distribution-src/**'
+      - '.github/workflows/windows-release.yml'
+      - 'release/update.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message, '[publish-manifest]') }}
+    runs-on: windows-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Get public source at this commit
+        shell: pwsh
+        run: |
+          git init .
+          git remote add origin "https://github.com/$env:GITHUB_REPOSITORY.git"
+          git fetch --depth=1 origin $env:GITHUB_SHA
+          git checkout --detach FETCH_HEAD
+      - name: Test and build
+        shell: pwsh
+        run: |
+          .\distribution-src\download-runtime.ps1
+          .\distribution-src\test-features.ps1
+          .\distribution-src\test-transactions.ps1
+          .\distribution-src\build.ps1
+          .\distribution-src\release-v2.ps1 -Unsigned
+      - name: Publish public prerelease without signing credentials
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: .\distribution-src\publish-github.ps1 -Phase build
+  publish-manifest:
+    if: ${{ contains(github.event.head_commit.message, '[publish-manifest]') }}
+    runs-on: windows-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Get public source at this commit
+        shell: pwsh
+        run: |
+          git init .
+          git remote add origin "https://github.com/$env:GITHUB_REPOSITORY.git"
+          git fetch --depth=1 origin $env:GITHUB_SHA
+          git checkout --detach FETCH_HEAD
+      - name: Verify signed manifest and finalize release
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: .\distribution-src\publish-github.ps1 -Phase manifest

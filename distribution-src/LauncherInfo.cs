@@ -1,0 +1,1 @@
+static class LauncherInfo { public const string Sha256 = "8d1828496413c8ab22b3d4b5bf10d03ae39da46efca557996de8f42941b40418"; }

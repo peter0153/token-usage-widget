@@ -1,0 +1,1 @@
+static class HelperInfo { public const string Sha256 = "ebe6376254e26c2f592768214428045e90daf634b0a190814a1007f02e3faa76"; }

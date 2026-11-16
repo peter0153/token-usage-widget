@@ -1,0 +1,14 @@
+using System;using System.IO;using System.Linq;using System.Drawing;using System.Collections.Generic;using System.Threading.Tasks;using System.Windows.Forms;
+partial class UsageWidget {
+ async Task<bool> VerifyNewFeatures(){var checks=new Dictionary<string,bool>();var second=states.Count>1?states[1]:null;int previousRange=historyDays,previousWidth=miniWindow.LogicalWidth;try{
+  if(second!=null)states.Remove(second);states[0].Data.ResetCredits=3;states[0].Data.CreditsUpdated=DateTime.Now;for(int day=3;day<10;day++)if(day!=6)states[0].Data.DailyTokens[DailyUsageView.DateKey(DateTime.Today.AddDays(-day))]=day*143200;
+  historyDays=5;SelectTab("한도");board.Refresh();CapturePreview("home-five-days-dark.png");checks["fiveDaysOnHome"]=historyHits.Count==5&&HistoryRows().Count==5;
+  BoardClick(board,new MouseEventArgs(MouseButtons.Left,1,S(rangeTen.X+5),S(rangeTen.Y+5),0));board.Refresh();CapturePreview("home-ten-days-dark.png");checks["tenDaySelection"]=historyDays==10&&historyHits.Count==10&&HistoryRows().Count==10;
+  BoardClick(board,new MouseEventArgs(MouseButtons.Left,1,S(280),S(192),0));checks["resetCreditsLink"]=lastUsageLink==AccountExtras.UsageUrl;
+  lastUsageLink="";BoardClick(board,new MouseEventArgs(MouseButtons.Left,1,S(320),S(165),0));checks["usageLink"]=lastUsageLink==AccountExtras.UsageUrl;
+  SelectTab("기록");board.Refresh();CapturePreview("history-ten-days.png");checks["tenDayDetail"]=historyHits.Count==10&&board.Height>S(600);
+ }finally{if(second!=null&&!states.Contains(second))states.Add(second);historyDays=previousRange;SelectTab("한도");}
+ bool widths=true;foreach(int width in new[]{160,224,304,360}){miniWindow.LogicalWidth=width;UpdateMini();await Task.Delay(90);using(var bitmap=new Bitmap(miniWindow.Width,miniWindow.Height)){miniWindow.DrawToBitmap(bitmap,new Rectangle(Point.Empty,bitmap.Size));bitmap.Save(Path.Combine(AppPaths.Report,"mini-"+width+".png"));}widths&=miniWindow.Bounds.Width==miniWindow.Width&&miniWindow.Visible&&miniWindow.LastError==null;}checks["responsiveMiniWidths"]=widths;
+ SendMessage(miniWindow.Handle,0x200,IntPtr.Zero,IntPtr.Zero);miniWindow.OpenMenu(new Point(miniWindow.Bounds.Left,miniWindow.Bounds.Top));var size=shared.Items.OfType<ToolStripMenuItem>().FirstOrDefault(x=>x.Text=="미니바 크기");if(size!=null){size.Select();size.ShowDropDown();}SendMessage(miniWindow.Handle,0x2A3,IntPtr.Zero,IntPtr.Zero);for(int i=0;i<3;i++){UpdateMini();await Task.Delay(400);}checks["submenuStaysOpen"]=shared.Visible&&size!=null&&size.DropDown.Visible;if(size!=null){size.DropDownItems[0].PerformClick();checks["menuSizeSelection"]=miniWindow.LogicalWidth==160;size.HideDropDown();}else checks["menuSizeSelection"]=false;shared.Close();miniWindow.LogicalWidth=previousWidth;UpdateMini();SafeJson.Write(Path.Combine(AppPaths.Report,"feature-ui-verification.json"),checks);return checks.Values.All(x=>x);
+ }
+}
